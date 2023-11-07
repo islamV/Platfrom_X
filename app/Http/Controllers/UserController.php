@@ -153,8 +153,7 @@ class UserController extends Controller
                 redirect()->route('student_dashboard')->with('error', 'Classroom not found.');
         }
     }
-
-
+    //the success is my aim no love !
 
     public function classroomLeave($slug, Request $request)
     {
