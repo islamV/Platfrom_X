@@ -44,7 +44,7 @@
                                             <td>{{ $student->email }}</td>
                                             <td>{{ $student->date_joined }}</td>
                                             @auth('instructor')
-                                                <form action="#" method="POST">
+                                                <form action="{{Route('instructor_classroom.showResults' ,  ['slug' => $classroom->slug, 'student_slug' => $student->slug])}}" method="POST">
                                                     @csrf
                                                     <td><button type="submit" class="btn btn-outline-primary">View grades</button></td>
                                                 </form>

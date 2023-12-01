@@ -43,7 +43,7 @@
                                     <div class="clean-product-item">
                                         @if(Auth::user()->gender == "male")
                                             <input class="form-check-input" type="radio" name="gender" id="flexRadioDefault1" checked 
-                                            value="male">
+                                            value="male" >
                                             <label class="form-check-label" for="flexRadioDefault1">
                                                 male
                                             </label>

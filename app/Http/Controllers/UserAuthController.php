@@ -30,7 +30,7 @@ class UserAuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|max:12|min:8'
+            'password' => 'required|min:6'
         ]);
         if(!$request->expectsJson()){
             if(Auth::attempt($request->only('email', 'password'))) {

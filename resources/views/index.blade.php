@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Quizzix')
+@section('title', config('app.name'))
 
 <link rel="stylesheet" href="{{asset('css/style.css')}}">
 <link rel="stylesheet" href="{{asset('css/aos.css')}}">
@@ -69,7 +69,7 @@
               exams in an environment as comfortable as your own room.
             </p>
               <p>
-              Our dear teachers, the effort you do during classes is already much so, please, let Quizzix do the rest for you.
+              Our dear teachers, the effort you do during classes is already much so, please, let {{config('app.name')}} do the rest for you.
             </p>
             <div class="col col-md-3">
             <a href="" class="button-88">Read More </a>
@@ -92,7 +92,7 @@
             <div class="icon-box mt-5 mt-lg-0" data-aos="zoom-in" data-aos-delay="150">
               <i class="bi bi-alarm"></i>
               <h4>It Is Exam Time</h4>
-              <p>No need to worry about forgetting your exams dates. Quizzix will notify you.</p>
+              <p>No need to worry about forgetting your exams dates. {{config('app.name')}} will notify you.</p>
             </div>
             <div class="icon-box mt-5" data-aos="zoom-in" data-aos-delay="150">
               <i class="bi bi-send-check"></i>
@@ -102,7 +102,7 @@
             <div class="icon-box mt-5" data-aos="zoom-in" data-aos-delay="150">
               <i class="bi bi-cloud-lightning"></i>
               <h4>What is in my teacher`s mind?</h4>
-              <p>Stay in touch with your class teacher with Quizzix for any updates or announcements</p>
+              <p>Stay in touch with your class teacher with {{config('app.name')}} for any updates or announcements</p>
             </div>
             <div class="icon-box mt-5" data-aos="zoom-in" data-aos-delay="150">
               <i class="bi bi-card-checklist"></i>
@@ -146,7 +146,7 @@
               <div class="icon"><i class="bi bi-shield-check"></i></div>
               <h4><a href="">Auto Grading</a></h4>
               <p>Save time
-                and allow Quizzix to grade exams</p>
+                and allow {{ config('app.name') }} to grade exams</p>
 
             </div>
           </div>

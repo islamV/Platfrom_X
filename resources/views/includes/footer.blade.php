@@ -28,6 +28,6 @@
         </div>
     </div>
     <div class="footer-copyright">
-        <p>© {{ now()->year }} Copyright Quizzix</p>
+        <p>© {{ now()->year }} Copyright <a href=""></a></p>
     </div>
 </footer>

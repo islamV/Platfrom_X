@@ -69,11 +69,15 @@ class InstructorController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048'
+            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+            'phone' => 'required|string' ,
+            'gender'=> 'required|string'
         ]);
 
         $user = Auth::guard('instructor')->user();
         $user->name = $request->name;
+        $user->phone = $request->phone;
+        $user->gender = $request->gender;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
@@ -436,6 +440,185 @@ class InstructorController extends Controller
             ])->setStatusCode(200);
         }
         return view('classrooms.classroom_students', compact('classroom', 'students', 'instructors'));
+    } 
+    public function showResults(Request $request,$slug, $student_slug)
+    {
+        $classroom = Classroom::findBySlugOrFail($slug);
+        $student = User::findBySlugOrFail($student_slug) ;
+        $classroom_student = Classroom_student::where('student_id', $student->id)->where('classroom_id', $classroom->id)->first();
+        $examResults = Exam_result::where('classroom_student_id', $classroom_student->id)->get();
+        $exam_ids = $examResults->pluck('exam_id')->unique()->toArray();
+        $exams = Exam::whereIn('id', $exam_ids)->get();
+        return view('classrooms.classroom_student_result', compact('classroom', 'examResults', 'exams'));
+    }
+    public function viewSubmission(Request $request,$slug,$exam_id)
+    {
+        $classroom = Classroom::findBySlugOrFail($slug);
+        $classroom_student = Classroom_student::where('student_id', Auth::user()->id)->where('classroom_id', $classroom->id)->first();
+        $exam = Exam::where('id', $exam_id)->first();
+        $examResult = Exam_result::where('classroom_student_id', $classroom_student->id)->where('exam_id', $exam_id)->first();
+        if ($examResult)
+        {
+            // Send all the Mcq questions with the correct answers and student answers 
+            $mcqQuestions = Exam_question::where('exam_id', $exam_id)
+                ->whereHas('question', function ($query) {
+                    $query->where('type_id', 1); // Filter only MCQ questions
+                })
+                ->with('question')
+                ->get();
+
+            $mcqQuestionsWithOptions = [];
+            foreach ($mcqQuestions as $mcqQuestion) {
+                $mcqQuestionOptions = Mcq_question::where('question_id', $mcqQuestion->question_id)->get();
+                $correctOption = Mcq_question::where('question_id', $mcqQuestion->question_id)
+                    ->where('is_correct', 'true')
+                    ->value('option');
+                $student_exam_answer = Student_exam_answer::where('exam_question_id', $mcqQuestion->id)->where('classroom_student_id', $classroom_student->id)->first();
+                $studentAnswer = Mcq_answer ::where('student_exam_answer_id', $student_exam_answer->id)->value('answer');
+                $Mark = $student_exam_answer->grade;
+                $mcqQuestionsWithOptions[] = [
+                    'question' => $mcqQuestion->question,
+                    'options' => $mcqQuestionOptions,
+                    'correct_option' => $correctOption,
+                    'student_answer' => $studentAnswer,
+                    'grade' => $Mark,
+                ];
+            }
+
+            // Send all the True/False questions with the correct answers and student answers 
+            $tfQuestions = Exam_question::where('exam_id', $exam_id)
+                ->whereHas('question', function ($query) {
+                    $query->where('type_id', 2); // Filter only True/False questions
+                })
+                ->with('question')
+                ->get();
+
+            $tfQuestionsWithOptions = [];
+            foreach ($tfQuestions as $tfQuestion) {
+                $tfQuestionOptions = [
+                    ['option' => 'true'],
+                    ['option' => 'false'],
+                ];
+                $correctOption = T_f_question::where('question_id', $tfQuestion->question_id)->value('answer');
+                $student_exam_answer = Student_exam_answer::where('exam_question_id', $tfQuestion->id)->where('classroom_student_id', $classroom_student->id)->first();
+                $studentAnswer = T_f_answer::where('student_exam_answer_id', $student_exam_answer->id)->value('answer');
+                $Mark = $student_exam_answer->grade;
+                $tfQuestionsWithOptions[] = [
+                    'question' => $tfQuestion->question,
+                    'options' => $tfQuestionOptions,
+                    'correct_option' => $correctOption,
+                    'student_answer' => $studentAnswer,
+                    'grade' => $Mark,
+                ];
+            }
+
+            // Send all the Fill blank questions with the correct answers and student answers 
+            $fillQuestions = Exam_question::where('exam_id', $exam_id)
+                ->whereHas('question', function ($query) {
+                    $query->where('type_id', 3); // Filter only Fill the Blank questions
+                })
+                ->with('question')
+                ->get();
+        
+            $fillQuestionsWithBlanks = [];
+
+            // Array to store ids of retrieved Student_exam_answer records
+            $retrievedStudentAnswers = []; 
+            
+            foreach ($fillQuestions as $fillQuestion) {
+                $fillQuestionBlanks = Complete_question::where('question_id', $fillQuestion->question_id)->get();
+                $correctAnswers = [];
+                $studentAnswers = [];
+                $Mark = 0;
+                foreach ($fillQuestionBlanks as $blank) {
+                    $correctAnswers[$blank->id] = $blank->blank_answer;
+
+                    // Check if a Student_exam_answer object has already been retrieved for this question and student
+                    $student_exam_answer = null;
+                    $foundObject = null;
+                    foreach ($retrievedStudentAnswers as $obj) {
+                        if ($obj->exam_question_id == $fillQuestion->id && $obj->classroom_student_id == $classroom_student->id) {
+                            $foundObject = $obj;
+                            break;
+                        }
+                    }
+                    if ($foundObject !== null) {
+                        // Get the next object with the same parameters
+                        $student_exam_answer = Student_exam_answer::where('exam_question_id', $fillQuestion->id)
+                            ->where('classroom_student_id', $classroom_student->id)
+                            ->where('id', '>', $foundObject->id)
+                            ->first();
+                        $Mark += $student_exam_answer->grade;
+                    } else {
+                        // Retrieve the Student_exam_answer object
+                        $student_exam_answer = Student_exam_answer::where('exam_question_id', $fillQuestion->id)
+                            ->where('classroom_student_id', $classroom_student->id)
+                            ->first();
+                        $Mark += $student_exam_answer->grade;
+                        // Add the retrieved object to the array
+                        $retrievedStudentAnswers[] = $student_exam_answer;
+                    }
+
+                    $completeAnswer = Complete_answer::where('student_exam_answer_id', $student_exam_answer->id)->where('blank_id', $blank->id)->first();
+                    $studentAnswer = $completeAnswer->answer;
+                    $isCorrect = false;
+                    if($blank->is_case_sensitive == 'true')
+                    {
+                        if (strcmp($studentAnswer, $correctAnswers[$blank->id]) === 0){
+                            $isCorrect = true;
+                        }
+                    }
+                    else if($blank->is_case_sensitive == 'false'){
+                        if (strcasecmp($studentAnswer, $correctAnswers[$blank->id]) === 0)
+                            {
+                                $isCorrect = true;
+                            }
+                    } 
+                    $studentAnswers[] = [
+                        'blank_id' => $blank->id,
+                        'answer' => $studentAnswer,
+                        'is_correct' => $isCorrect
+                    ]; 
+                }
+                $fillQuestionsWithBlanks[] = [
+                    'question' => $fillQuestion->question,
+                    'blanks' => $fillQuestionBlanks,
+                    'correct_answers' => $correctAnswers,
+                    'student_answers' => $studentAnswers,
+                    'grade' => $Mark,
+                ];
+            }
+        
+
+            // Get all the Essay questions for the specified exam 
+            $essayQuestions = Exam_question::where('exam_id', $exam_id)
+                ->whereHas('question', function ($query) {
+                    $query->where('type_id', 4); // Filter only Essay questions
+                })
+                ->with('question')
+                ->get();
+                $essayQuestionsWithAnswers = [];
+                foreach ($essayQuestions as $essayQuestion) {
+                    $student_exam_answer = Student_exam_answer::where('exam_question_id', $essayQuestion->id)
+                        ->where('classroom_student_id', $classroom_student->id)
+                        ->first();
+                    $studentAnswer = Essay_answer::where('student_exam_answer_id', $student_exam_answer->id)
+                        ->value('answer');
+
+                    $Mark = $student_exam_answer->grade;
+                    $essayQuestionsWithAnswers[] = [
+                        'question' => $essayQuestion->question,
+                        'student_answer' => $studentAnswer,
+                        'grade' => $Mark,
+                    ];
+                }
+
+            return view('exams.view_submission', compact('classroom', 'exam', 'mcqQuestionsWithOptions', 'tfQuestionsWithOptions', 'fillQuestionsWithBlanks', 'essayQuestionsWithAnswers'));
+
+        }
+        else{
+            return redirect()->route('student_dashboard');
+        }
     }
 
     public function getUser(Request $request)

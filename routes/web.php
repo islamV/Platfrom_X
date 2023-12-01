@@ -105,6 +105,7 @@ Route::prefix('instructor')->group(function () {
             Route::get('/get-user/{role}/{id}', [InstructorController::class, 'getUser'])->name('instructor_get_user');
             Route::prefix('/students')->group(function () {
                 Route::get('/', [InstructorController::class, 'classroomStudents'])->name('instructor_classrooms.students');
+                Route::post('/results/{student_slug}', [InstructorController::class, 'showResults'])->name('instructor_classroom.showResults');
                 Route::post('/delete', [InstructorController::class, 'classroomStudentsDelete'])->name('instructor_classrooms.students.delete');
                 Route::post('/cheat/{student_slug}', [InstructorController::class, 'classroomStudentsCheat'])->name('instructor_classrooms.students.cheat');
                 Route::get('/{student_slug}', [InstructorController::class, 'classroomStudentsShow'])->name('instructor_classrooms.students.show');

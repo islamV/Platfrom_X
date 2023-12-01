@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Quizzix')
+@section('title', config('app.name'))
 
 <link rel="stylesheet" href="{{asset('css/style.css')}}">
 <link rel="stylesheet" href="{{asset('css/aos.css')}}">
@@ -35,7 +35,7 @@
             <div class="icon-box mt-5" data-aos="zoom-in" data-aos-delay="150">
               <i class="bi bi-alarm"></i>
               <h4>Create Exams With Autograding </h4>
-              <p>with Quizzix you can gather questions from your pre-created questions bank and put them 
+              <p>with{{ config('app.name')}} you can gather questions from your pre-created questions bank and put them 
                 into an exam.
               </p>
                <p>add answers for your exams then have no worry about grading your exams manually.

@@ -23,7 +23,9 @@ class Instructor extends Authenticatable
         'name',
         'email',
         'password',
-        'photo'
+        'photo' ,
+        'phone' ,
+        'gender'
         
     ];
 

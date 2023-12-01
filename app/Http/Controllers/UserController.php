@@ -73,15 +73,15 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            // 'phone' => 'required|string',
-            // 'gender' => 'required|string',
+            'phone' => 'required|string',
+             'gender' => 'required|string',
             'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048'
         ]);
 
         $user = Auth::user();
         $user->name = $request->name;
-        // $user->phone = $request->phone;
-        // $user->gender = $request->gender;
+        $user->phone = $request->phone;
+        $user->gender = $request->gender;
 
         if ($request->hasFile('image')) {
             $image = $request->file('image');
@@ -573,7 +573,7 @@ class UserController extends Controller
         : redirect()->route('student_classroom.showResults', ['slug' => $slug])->with('success', 'Exam Submitted Successfully.');
     }
 
-    public function showResults(Request $request,$slug)
+     public function showResults(Request $request,$slug)
     {
         $classroom = Classroom::findBySlugOrFail($slug);
         $classroom_student = Classroom_student::where('student_id', Auth::user()->id)->where('classroom_id', $classroom->id)->first();
