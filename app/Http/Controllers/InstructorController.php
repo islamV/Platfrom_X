@@ -16,6 +16,7 @@ use App\Models\Exam_question;
 use App\Models\Exam_result;
 use App\Models\Instructor;
 use App\Models\Classroom;
+use App\Models\classroomcode;
 use App\Models\Mcq_question;
 use App\Models\Question;
 use App\Models\Question_type;
@@ -68,7 +69,6 @@ class InstructorController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            
             'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048'
         ]);
 
@@ -140,7 +140,17 @@ class InstructorController extends Controller
         $classroom->name = $request->name;
         $classroom->info = $request->info;
         $classroom->code = base64_encode(Str::random(8));
+
         if ($classroom->save()) {
+            // $students = DB::table('users')->get();
+            // $classroom_code_student= new classroomcode();
+            // foreach($students as $student){
+            //     $classroom_code_student->student_id = $student->id;
+            //     $classroom_code_student->classroom_id = $classroom->id;
+            //      $classroom_code_student->code = base64_encode(Str::random(8));
+            //      $classroom_code_student->save();
+            // }
+
             $classroom_instructor = new Classroom_instructor();
             $classroom_instructor->classroom_id = $classroom->id;
             $classroom_instructor->instructor_id = Auth::guard('instructor')->user()->id;
@@ -151,7 +161,7 @@ class InstructorController extends Controller
                 if ($request->expectsJson()) {
                     return response()->json(['message' => $message])->setStatusCode($status);
                 } else {
-                    return redirect()->back()->with('success', $message)->setStatusCode($status);
+                    return redirect('dashboard')->with('success', $message)->setStatusCode($status);
                 }
             } else {
                 $message = 'Oops! Something went wrong, please try again.';

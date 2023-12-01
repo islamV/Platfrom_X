@@ -106,7 +106,9 @@
                                                                   value="{{ old('text') }}" rows="3"
                                                                   onkeypress="if(event.keyCode==13) { this.form.submit(); }"></textarea>
                                                            <label for="file" >Attachment</label>       
-                                                           <input type="file" name="attachment">      
+                                                           <input type="file" name="attachment"> 
+                                                           <br> 
+                                                           <span style="color:red">*You can also add files in your post</span>    
                                                     </div>
                                                 </form>
                                             </div>

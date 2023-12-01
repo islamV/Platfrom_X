@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('classroomcodes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('student_id')->constrained()->onDelete('cascade')->onUpdate('cascade')->references('id')->on('users');
-            $table->foreignId('classroom_id')->constrained()->onDelete('cascade')->onUpdate('cascade')->references('id')->on('classrooms');
-            $table->string('code');
-            $table->timestamps();
-        });
+        // Schema::create('classroomcodes', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignId('student_id')->constrained()->onDelete('cascade')->onUpdate('cascade')->references('id')->on('users');
+        //     $table->foreignId('classroom_id')->constrained()->onDelete('cascade')->onUpdate('cascade')->references('id')->on('classrooms');
+        //     $table->string('code');
+        //     $table->timestamps();
+        // });
     }
 
     /**

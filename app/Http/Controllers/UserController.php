@@ -73,16 +73,16 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string',
-            'phone' => 'required|string',
+            // 'phone' => 'required|string',
+            // 'gender' => 'required|string',
             'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048'
         ]);
 
         $user = Auth::user();
         $user->name = $request->name;
-        $user->phone = $request->phone;
-        $user->gender = $request->gender;
-        $user->degree = $request->degree;
-        $user->institute = $request->institute;
+        // $user->phone = $request->phone;
+        // $user->gender = $request->gender;
+
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
@@ -100,12 +100,37 @@ class UserController extends Controller
             return redirect()->route('student_profile')->with('success', 'Profile updated successfully.');
         }
     }
-
+    // public function classroomJoin(Request $request)
+    // {
+    //     $request->validate(['code' => 'required|string']);
+    //     $classroom = classroomcode::where('code', $request->code)->where('student_id', Auth::user()->id)->first();
+    
+    //     if ($classroom) {
+    //         $classroom_student = Classroom_student::where('classroom_id', $classroom->id)->where('student_id', Auth::user()->id)->first();
+    //         if ($classroom_student) {
+    //             return $request->expectsJson() ?
+    //                 response()->json(['message' => 'You are already joined this classroom.'])->setStatusCode(401) :
+    //                 redirect()->route('student_dashboard')->with('error', 'You are already joined this classroom.');
+    //         } else {
+    //             $classroom_student = new Classroom_student();
+    //             $classroom_student->classroom_id = $classroom->id;
+    //             $classroom_student->student_id = Auth::user()->id;
+    //             $classroom_student->date_joined = Carbon::now()->timezone('Africa/Cairo')->format('Y-m-d H:i:s');
+    //             $classroom_student->save();
+    //             return $request->expectsJson() ?
+    //                 response()->json(['message' => 'Classroom joined successfully.'])->setStatusCode(200) :
+    //                 redirect()->route('student_dashboard')->with('success', 'Classroom joined successfully.');
+    //         }
+    //     } else {
+    //         return $request->expectsJson() ?
+    //             response()->json(['message' => 'Classroom not found.'])->setStatusCode(401) :
+    //             redirect()->route('student_dashboard')->with('error', 'Classroom not found.');
+    //     }
+    // }
     public function classroomJoin(Request $request)
     {
         $request->validate(['code' => 'required|string']);
-        $classroom = classroomcode::where('code', $request->code)->where('student_id', Auth::user()->id)->first();
-    
+        $classroom = Classroom::where('code', $request->code)->first();
         if ($classroom) {
             $classroom_student = Classroom_student::where('classroom_id', $classroom->id)->where('student_id', Auth::user()->id)->first();
             if ($classroom_student) {
@@ -128,6 +153,7 @@ class UserController extends Controller
                 redirect()->route('student_dashboard')->with('error', 'Classroom not found.');
         }
     }
+
 
 
     public function classroomLeave($slug, Request $request)
@@ -276,6 +302,28 @@ class UserController extends Controller
             return redirect()->back()->with($status == 200 ? 'success' : 'error', $message)->setStatusCode($status);
         }
     }
+    
+    // public function showVerifyImagePage(Request $request,$slug,$exam_id)
+    // {
+    //     if(isset($_COOKIE['imageVerified'])) {
+    //         return redirect()->route('student_classroom.take-exam', ['slug' => $slug,'exam_id' => $exam_id]);
+    //     }
+    //     else{
+    //         $classroom = Classroom::where('slug', $slug)->first();
+    //         $exam = Exam::where('id', $exam_id)->first();
+    //         $current_time = now(new \DateTimeZone('Africa/Cairo'));
+    //         $current_time->modify('+1 hour'); // عشان التوقيت الصيفى
+    //         if (!$classroom || !$exam) {
+    //             return redirect()->route('student_dashboard');
+    //         }
+    //         else if ($current_time < $exam->start_date || $current_time > $exam->end_date){
+    //                 return redirect()->route('student_dashboard');
+    //             }
+    //         else{
+    //             return view('exams.verify_image_student' , compact('classroom','exam'));
+    //         }
+    //     } 
+    // }
 
 
     public function takeExam(Request $request,$slug,$exam_id)
@@ -284,8 +332,8 @@ class UserController extends Controller
         $current_time = $current_time = now(new \DateTimeZone('Africa/Cairo')); 
         $current_time->modify('+1 hour'); // عشان التوقيت الصيفى
 
-        // if(!isset($_COOKIE['imageVerified'])) {
-        //     return redirect()->route('student_classroom.verify-image', ['slug' => $slug,'exam_id' => $exam_id]);
+         // if(!isset($_COOKIE['imageVerified'])) {
+       //     return redirect()->route('student_classroom.verify-image', ['slug' => $slug,'exam_id' => $exam_id]);
         // }
         // else if ($current_time < $exam->start_date || $current_time > $exam->end_date){
         //     return redirect()->route('student_dashboard');

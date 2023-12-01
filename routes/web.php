@@ -148,4 +148,4 @@ Route::get('/download/{attachment}',function($attachment){
         // Handle the case where the file doesn't exist
         abort(404);
     }
-} )->name('download');
+})->name('download');
